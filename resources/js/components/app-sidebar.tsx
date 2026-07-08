@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Stethoscope } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FolderGit2, LayoutGrid, Stethoscope, CalendarCheck, UserCog } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,20 +14,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Appointment Assistant',
-        href: '/assistant',
-        icon: Stethoscope,
-    }
-];
+import type { Auth, NavItem } from '@/types';
 
 const footerNavItems: NavItem[] = [
     {
@@ -43,6 +30,19 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        { title: 'Appointment Assistant', href: '/assistant', icon: Stethoscope },
+        { title: 'My Appointments', href: '/appointments', icon: CalendarCheck },
+        ...(auth.user?.is_admin ? [{ title: 'Manage Doctors', href: '/admin/doctors', icon: UserCog }] : []),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
