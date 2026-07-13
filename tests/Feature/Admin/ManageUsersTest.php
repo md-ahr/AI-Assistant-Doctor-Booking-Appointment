@@ -16,8 +16,8 @@ test('non-admins cannot visit manage users', function () {
         ->assertForbidden();
 });
 
-test('admins can visit manage users and see users list', function () {
-    $admin = User::factory()->admin()->create();
+test('admins can visit manage users and see users list ordered by name', function () {
+    $admin = User::factory()->admin()->create(['name' => 'Zoe Admin']);
     $member = User::factory()->create(['name' => 'Pat Member', 'is_admin' => false]);
 
     $this->actingAs($admin)
@@ -26,6 +26,12 @@ test('admins can visit manage users and see users list', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/users/index')
             ->has('users', 2)
+            ->where('users.0.name', 'Pat Member')
+            ->where('users.0.email', $member->email)
+            ->where('users.0.is_admin', false)
+            ->where('users.1.name', 'Zoe Admin')
+            ->where('users.1.is_admin', true)
+            ->missing('users.0.password')
             ->etc()
         );
 });
@@ -49,6 +55,69 @@ test('admins can create a user', function () {
         ->and($user->name)->toBe('New Member')
         ->and($user->is_admin)->toBeFalse()
         ->and($user->email_verified_at)->not->toBeNull();
+
+    $this->assertTrue(auth()->attempt([
+        'email' => 'new@example.com',
+        'password' => 'password',
+    ]));
+});
+
+test('creating a user requires name email password and role', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.users.store'), [])
+        ->assertSessionHasErrors(['name', 'email', 'password', 'is_admin']);
+});
+
+test('creating a user requires a unique email', function () {
+    $admin = User::factory()->admin()->create();
+    User::factory()->create(['email' => 'taken@example.com']);
+
+    $this->actingAs($admin)
+        ->post(route('admin.users.store'), [
+            'name' => 'Duplicate',
+            'email' => 'taken@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'is_admin' => false,
+        ])
+        ->assertSessionHasErrors(['email']);
+});
+
+test('updating a user requires a unique email', function () {
+    $admin = User::factory()->admin()->create();
+    User::factory()->create(['email' => 'taken@example.com']);
+    $member = User::factory()->create(['email' => 'member@example.com']);
+
+    $this->actingAs($admin)
+        ->put(route('admin.users.update', $member), [
+            'name' => $member->name,
+            'email' => 'taken@example.com',
+            'is_admin' => false,
+        ])
+        ->assertSessionHasErrors(['email']);
+});
+
+test('guests cannot mutate users', function () {
+    $target = User::factory()->create();
+
+    $this->post(route('admin.users.store'), [
+        'name' => 'Hack',
+        'email' => 'hack@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'is_admin' => true,
+    ])->assertRedirect(route('login'));
+
+    $this->put(route('admin.users.update', $target), [
+        'name' => 'Hack',
+        'email' => $target->email,
+        'is_admin' => true,
+    ])->assertRedirect(route('login'));
+
+    $this->delete(route('admin.users.destroy', $target))
+        ->assertRedirect(route('login'));
 });
 
 test('admins can create an admin user', function () {
