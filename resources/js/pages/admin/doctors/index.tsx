@@ -2,6 +2,7 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import ConfirmDeleteDialog from '@/components/confirm-delete-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -54,6 +55,8 @@ function workingDaysLabel(doctor: Doctor): string {
 export default function DoctorsIndex({ doctors }: Props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Doctor | null>(null);
+  const [deleting, setDeleting] = useState<Doctor | null>(null);
+  const [deletingProcessing, setDeletingProcessing] = useState(false);
 
   const form = useForm<{ name: string; specialty: string; bio: string; days: DayRow[] }>({
     name: '',
@@ -114,13 +117,23 @@ export default function DoctorsIndex({ doctors }: Props) {
     }
   }
 
-  function destroy(doctor: Doctor) {
-    if (!confirm(`Delete ${doctor.name}? This also removes their appointments.`)) {
+  function requestDestroy(doctor: Doctor) {
+    setDeleting(doctor);
+  }
+
+  function confirmDestroy() {
+    if (!deleting) {
       return;
     }
 
-    router.delete(`/admin/doctors/${doctor.id}`, {
-      onSuccess: () => toast.success('Doctor removed.'),
+    setDeletingProcessing(true);
+
+    router.delete(`/admin/doctors/${deleting.id}`, {
+      onSuccess: () => {
+        toast.success('Doctor removed.');
+        setDeleting(null);
+      },
+      onFinish: () => setDeletingProcessing(false),
     });
   }
 
@@ -161,7 +174,7 @@ export default function DoctorsIndex({ doctors }: Props) {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(doctor)}>
                       <Pencil className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => destroy(doctor)}>
+                    <Button variant="ghost" size="icon" onClick={() => requestDestroy(doctor)}>
                       <Trash2 className="size-4 text-destructive" />
                     </Button>
                   </td>
@@ -171,6 +184,20 @@ export default function DoctorsIndex({ doctors }: Props) {
           </table>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={deleting !== null}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setDeleting(null);
+          }
+        }}
+        title={`Delete ${deleting?.name ?? 'doctor'}?`}
+        description="This permanently removes the doctor and their appointments. This action cannot be undone."
+        confirmLabel="Delete doctor"
+        processing={deletingProcessing}
+        onConfirm={confirmDestroy}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">

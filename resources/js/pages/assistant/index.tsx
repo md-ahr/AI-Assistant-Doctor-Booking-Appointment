@@ -225,3 +225,13 @@ export default function Assistant({ conversations }: Props) {
     </div>
   );
 }
+
+Assistant.layout = {
+  breadcrumbs: [
+    {
+      title: 'AI Assistant',
+      href: '/admin/assistant',
+    },
+  ],
+};
+

@@ -68,3 +68,12 @@ export default function AppointmentsIndex({ appointments }: Props) {
     </>
   );
 }
+
+AppointmentsIndex.layout = {
+  breadcrumbs: [
+    {
+      title: 'Appointments',
+      href: 'admin/appointments',
+    },
+  ],
+};

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Stethoscope, CalendarCheck, UserCog } from 'lucide-react';
+import { LayoutGrid, Stethoscope, CalendarCheck, UserCog, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -26,7 +26,12 @@ export function AppSidebar() {
         },
         { title: 'Appointment Assistant', href: '/assistant', icon: Stethoscope },
         { title: 'My Appointments', href: '/appointments', icon: CalendarCheck },
-        ...(auth.user?.is_admin ? [{ title: 'Manage Doctors', href: '/admin/doctors', icon: UserCog }] : []),
+        ...(auth.user?.is_admin
+            ? [
+                  { title: 'Manage Doctors', href: '/admin/doctors', icon: UserCog },
+                  { title: 'Manage Users', href: '/admin/users', icon: Users },
+              ]
+            : []),
     ];
 
     return (
