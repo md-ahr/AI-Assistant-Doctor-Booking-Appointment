@@ -18,14 +18,19 @@ class AppointmentReminderMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Appointment reminder - '.config('app.name'),
+            subject: 'Reminder: your appointment with '.$this->appointment->doctor->name,
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'mail.appointment-reminder',
+            markdown: 'mail.reminder',
         );
+    }
+
+    public function attachments(): array
+    {
+        return [];
     }
 }

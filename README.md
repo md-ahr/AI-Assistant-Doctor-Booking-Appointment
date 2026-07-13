@@ -65,7 +65,7 @@ For email reminders, configure mail settings. The defaults target a local SMTP c
 ```env
 MAIL_MAILER=smtp
 MAIL_HOST=127.0.0.1
-MAIL_PORT=8025
+MAIL_PORT=1025
 MAIL_FROM_ADDRESS="hello@example.com"
 ```
 
