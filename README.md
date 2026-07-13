@@ -19,14 +19,15 @@ A Laravel application that lets patients book clinic appointments through a conv
 | Frontend | Inertia v3, React 19, Tailwind CSS v4 |
 | AI | Laravel AI SDK, Gemini 2.5 Flash |
 | Auth | Laravel Fortify, passkeys |
-| Database | SQLite (default) |
+| Database | PostgreSQL 17 Alpine (Docker Compose) |
 | Testing | Pest 4 |
 
 ## Requirements
 
-- PHP 8.4+
+- PHP 8.4+ with `pdo_pgsql`
 - Composer
 - Node.js 22+
+- Docker (for PostgreSQL)
 - A [Google Gemini API key](https://aistudio.google.com/apikey)
 
 ## Getting Started
@@ -34,22 +35,25 @@ A Laravel application that lets patients book clinic appointments through a conv
 ### Quick setup
 
 ```bash
+docker compose up -d
 composer setup
 ```
 
-This installs dependencies, copies `.env`, generates an app key, runs migrations, and builds frontend assets.
+This starts PostgreSQL, installs dependencies, copies `.env`, generates an app key, runs migrations, and builds frontend assets.
 
 ### Manual setup
 
 ```bash
+docker compose up -d
 composer install
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
 php artisan migrate --seed
 npm install
 npm run build
 ```
+
+PostgreSQL credentials match `.env.example` (`ai_appointment` / `secret` on port `5432`).
 
 ### Configuration
 

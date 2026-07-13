@@ -15,13 +15,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::query()->updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => 'password',
+                'email_verified_at' => now(),
+                'is_admin' => true,
+            ],
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'is_admin' => true,
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'member@example.com'],
+            [
+                'name' => 'Demo Member',
+                'password' => 'password',
+                'email_verified_at' => now(),
+                'is_admin' => false,
+            ],
+        );
 
         $this->call([DoctorSeeder::class]);
     }
